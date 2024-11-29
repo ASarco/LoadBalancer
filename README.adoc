@@ -2,7 +2,7 @@
 
 This is a simple Load Balancer based on Spring Cloud Loadbalancer. It is useful for testing locally and see what happens when there is more than an instance of a service.
 
-It is currently configured for Argonath, but it can be easily modified to work with everything.
+It is currently configured for a service named Argonath, but it can be easily modified to work with everything.
 
 WARNING: Only for local test use, not suitable for production use.
 
