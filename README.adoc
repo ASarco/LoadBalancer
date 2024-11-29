@@ -1,0 +1,47 @@
+= Test Load Balancer
+
+This is a simple Load Balancer based on Spring Cloud Loadbalancer. It is useful for testing locally and see what happens when there is more than an instance of a service.
+
+It is currently configured for Argonath, but it can be easily modified to work with everything.
+
+WARNING: Only for local test use, not suitable for production use.
+
+
+== Configuration
+
+The whole configuration is in link:src/main/resources/application.yaml[application.yaml].
+
+The `spring.cloud.gateway.routes` section contains a single route that unconditionally will forward everything that comes in. The difference is that the URI points to a special endpoint, which uses the `lb` protocol (for load balancer). this will indicate the gateway to look up the actual URIs in the loadbalancing section of the configuration.
+[source, yaml]
+      routes:
+        - id: argonath
+          uri: lb://argonath
+          predicates:
+            - Path=/**
+
+`spring.cloud.discovery.client.simple.instances` contains a service id (which has to match the URI in the route), and a list of destinations URIs.
+[source, yaml]
+  cloud:
+    discovery:
+      client:
+        simple:
+          instances:
+            argonath:
+              - uri: http://argo.local.test:9016
+              - uri: http://argo.local.test:9026
+
+
+This Load Balancer should take the place of the service to be tested with mutiple instances. For example, if the service usually runs on port 9006, then the load balancer should use port 9006 and the multiple instances of the actual service should use different ports, so they're able to run simultaneously in the local machine, and stated in the URIs of the load balancer, as described above.
+The services can be started using program arguments to run in a different port, for example:
+[source]
+--server.port=9026 --management.server.port=9027
+
+TIP: To facilitate identification of the multiple services when testing, it is possible to add a header which will be present in all request, if it's added to all requests (via a configuration or a filter).
+
+For example, in the `default-filters` section of a gateway:
+[source]
+- AddResponseHeader=X-Argonath-Instance, ${server.instance.id}
+
+and then passing a program argument with a different value to every instance:
+[source]
+--server.instance.id=2

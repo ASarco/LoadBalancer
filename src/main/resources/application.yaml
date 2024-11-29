@@ -1,0 +1,38 @@
+server:
+  port: 9006
+
+spring:
+  application:
+    name: LoadBalancer
+
+  cloud:
+    discovery:
+      client:
+        simple:
+          instances:
+            argonath:
+              - uri: http://argo.local.test:9016
+              - uri: http://argo.local.test:9026
+    gateway:
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins: "http://fe.local.test:1337, https://local.test:1337, http://local.test:1337, https://localhost:1337, http://localhost:1337, http://localhost:9006, http://argo.local.test:9006, http://argo.local.test:9016, http://argo.local.test:9026, https://localhost:9006, http://0.0.0.0:1337, https://0.0.0.0:1337, https://localhost:1337"
+            allowedMethods: "*"
+            allowedHeaders: "*"
+            allowCredentials: true
+
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials
+      routes:
+        - id: argonath
+          uri: lb://argonath
+          predicates:
+            - Path=/**
+logging:
+  level:
+    org:
+      springframework:
+        cloud:
+          loadbalancer: DEBUG
+          gateway: DEBUG
